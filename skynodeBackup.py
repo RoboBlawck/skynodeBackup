@@ -7,15 +7,8 @@ import pysftp
 from ftplib import FTP
 import time
 import os
-#Skynode settings
-host = "fna1.skynode.pro"
-user = "shingsurvival.42bc0ab7"
-port = 2022
-password = input("Enter password: ") #Don't log passwords
-remotedir = ['logs','plugins','MAIN_world', 'MAIN_world_nether', 'MAIN_world_the_end']
-localpath = "D:/SkriptServer/FTP/Temp/"
-blacklist = ['.jar']
-overwrite = ['latest.log']
+from var import *
+import compression
 #Google Drive FTP Adapter file
 #adapterdir = "D:\\SkriptServer\\FTP\\google-drive-ftp-adapter-jar-with-dependencies.jar"
 
@@ -29,7 +22,7 @@ def sftp_get_skynode(remotepath, localpath): #Custom version for skynode
         filepath = remotepath + '/' + file
         if file in overwrite: #If a file needs to be overwritten
             os.remove(localpath + filepath) #Then delete the file
-            print("[SFTP_GET]: Overwritten" + " " + localpath + filepath)
+            print("[SFTP_GET]: Delete" + " " + localpath + filepath + " " + "for overwriting")
         if file in blacklist or file[-4:] in blacklist or os.path.isfile(localpath + filepath): #If the file already exists, or in the blacklist,
             print("[SFTP_GET]: Skipped" + " " + filepath)
             continue
@@ -51,15 +44,15 @@ def sftp_get(remotepath, localpath): #Gets all files and folders recursively (an
             os.mkdir(localpath + filepath + '/')
             sftp_get(filepath, localpath)
 
-with pysftp.Connection(host=host, username=user, password=password, port=port, cnopts=cnopts) as sftp:
+with pysftp.Connection(host=host, username=user, password=password, port=port, cnopts=cnopts) as sftp: #Get files
     for folder in remotedir:
         if not os.path.exists(localpath+folder):
             os.mkdir(localpath+folder)
         sftp_get_skynode(folder, localpath)
 
 
-
-
+compression.zip(remotedir[-3::], "OUTPUT_World.7z") #Compresses files
+compression.zip([remotedir[1]], "OUTPUT_PCONFIG.7z")
 
 
 
